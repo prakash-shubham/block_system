@@ -1,5 +1,5 @@
 name: 'block_system'
 type: module
-description: 'My Awesome Module'
+description: 'A Module that takes Json data from specific website and saves them in the pre-existing custom block types.'
 core: 8.x
 package: 'Custom'

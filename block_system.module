@@ -6,12 +6,12 @@
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
-
 use Drupal\Component\Serialization\Json;
 
 /**
  * Implements hook_help().
  */
+
 function block_system_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     // Main module help for the block_system module.
@@ -21,45 +21,37 @@ function block_system_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<p>' . t('My Awesome Module') . '</p>';
       return $output;
 
-
     default:
   }
 }
 
 function block_system_cron () {
-
+	//Loading Block of type stock_exchange_rate_card
 	$blocks = \Drupal::entityTypeManager()
-    ->getStorage('block_content')
-    ->loadByProperties(array('type' => 'stock_exchange_rate_card'));
+		->getStorage('block_content')
+		->loadByProperties(array('type' => 'stock_exchange_rate_card'));
 
-  foreach ($blocks as $block) {
+	foreach ($blocks as $block) {
+		//Inserting Symbol value into URL
+		$value = $block->field_symbol->value;	
+		$url = 'http://dev.markitondemand.com/MODApis/Api/v2/Quote/jsonp?symbol='.$value.'&callback=myFunction';
 
-  	$value  = $block->field_symbol->value;	
-
-  	$url = 'http://dev.markitondemand.com/MODApis/Api/v2/Quote/jsonp?symbol='.$value.'&callback=myFunction';
-
-
-  	//$data = file_get_contents ( $url);
-
-		//$s=substr($data,11,strpos($data,")")-11);
-		
+		//Using HTTP Client
 		$client = \Drupal::httpClient();
 		$request = $client->get('http://dev.markitondemand.com/MODApis/Api/v2/Quote/jsonp?symbol='.$value.'&callback=myFunction');
-  	$response = (string)$request->getBody();
+		$response = (string)$request->getBody();
 
-		$s=substr($response,11,strpos($response,")")-11);
-
-    $decoded_data = Json::decode($s);
+		//Removing redundant data		
+		$data = substr($response,11,strpos($response,")")-11);
+		$decoded_data = Json::decode($data);
 
 		$last_price = $decoded_data['LastPrice'];
 		$change = $decoded_data['Change'];
 
-  	$block->set('field_change',$change);
-    $block->set('field_last_price',$last_price);
-    $block->save();
-
-		//dpm($value);
+		//Putting the values in Block Fields
+		$block->set('field_change',$change);
+		$block->set('field_last_price',$last_price);
+		$block->save();
 
   }
-
 }
