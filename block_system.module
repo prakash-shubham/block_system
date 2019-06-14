@@ -25,6 +25,16 @@ function block_system_help($route_name, RouteMatchInterface $route_match) {
   }
 }
 
+function block_system_element_info_alter(array &$types) {
+  if (isset($types['table'])) {
+    $types['table']['#attached']['library'][] = 'block_system/table_library';
+  }
+}
+
+function build () {
+	$build['#attached']['library'][] = 'block_system/block_library';
+}
+
 function block_system_cron () {
 	//Loading Block of type stock_exchange_rate_card
 	$blocks = \Drupal::entityTypeManager()
@@ -53,5 +63,5 @@ function block_system_cron () {
 		$block->set('field_last_price',$last_price);
 		$block->save();
 
-  }
+	}
 }
